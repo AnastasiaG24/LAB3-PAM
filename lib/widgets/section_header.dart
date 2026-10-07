@@ -14,9 +14,7 @@ class SectionHeader extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Expanded(
-          child: Text(title, style: AppTextStyles.bodyLargeSemibold),
-        ),
+        Expanded(child: Text(title, style: AppTextStyles.bodyLargeSemibold)),
         if (onSeeAll != null)
           GestureDetector(
             onTap: onSeeAll,

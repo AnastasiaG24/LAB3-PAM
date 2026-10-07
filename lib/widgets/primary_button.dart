@@ -14,7 +14,7 @@ class PrimaryButton extends StatelessWidget {
   });
 
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final PrimaryButtonSize size;
 
   bool get _isSmall => size == PrimaryButtonSize.xSmall;
@@ -22,29 +22,40 @@ class PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.primary,
+      color: onPressed == null ? AppColors.grey200 : AppColors.primary,
       borderRadius: BorderRadius.circular(_isSmall ? 6 : 12),
       elevation: 0,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(_isSmall ? 6 : 12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SizedBox(
-            height: _isSmall ? 32 : 52,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  label,
-                  style: _isSmall
-                      ? AppTextStyles.bodyXSmallSemibold
-                          .copyWith(color: AppColors.white)
-                      : AppTextStyles.bodyMediumSemibold
-                          .copyWith(color: AppColors.white),
-                ),
-              ],
+      child: Semantics(
+        container: true,
+        button: true,
+        enabled: onPressed != null,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(_isSmall ? 6 : 12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SizedBox(
+              height: _isSmall ? 32 : 52,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: _isSmall
+                          ? AppTextStyles.bodyXSmallSemibold.copyWith(
+                              color: AppColors.white,
+                            )
+                          : AppTextStyles.bodyMediumSemibold.copyWith(
+                              color: AppColors.white,
+                            ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -6,6 +6,8 @@ import '../models/workout_program.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import 'app_network_image.dart';
+import 'favorite_button.dart';
 import 'icon_metric.dart';
 
 class ProgramCard extends StatelessWidget {
@@ -16,70 +18,77 @@ class ProgramCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        height: 184,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.asset(program.imagePath, fit: BoxFit.cover),
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0x00000000), Color(0xCC000000)],
+    return Semantics(
+      container: true,
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          height: 184,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                AppNetworkImage(url: program.imageUrl),
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0x00000000), Color(0xCC000000)],
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (program.isPro)
-                      const Align(
-                        alignment: Alignment.centerRight,
-                        child: _ProBadge(),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FavoriteButton(id: program.id),
+                          const Spacer(),
+                          if (program.isPro) const ProBadge(),
+                        ],
                       ),
-                    const Spacer(),
-                    Text(
-                      program.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodyMediumSemibold.copyWith(
-                        color: AppColors.white,
+                      const Spacer(),
+                      Text(
+                        program.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodyMediumSemibold.copyWith(
+                          color: AppColors.white,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: IconMetric(
-                            iconPath: AppIcons.flame,
-                            label: '${program.calories} kcl',
-                            style: AppTextStyles.caption,
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: IconMetric(
+                              iconPath: AppIcons.flame,
+                              label: '${program.calories} kcl',
+                              style: AppTextStyles.caption,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: IconMetric(
-                            iconPath: AppIcons.clock,
-                            label: '${program.durationMinutes} min',
-                            style: AppTextStyles.caption,
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: IconMetric(
+                              iconPath: AppIcons.clock,
+                              label: '${program.durationMinutes} min',
+                              style: AppTextStyles.caption,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -87,8 +96,8 @@ class ProgramCard extends StatelessWidget {
   }
 }
 
-class _ProBadge extends StatelessWidget {
-  const _ProBadge();
+class ProBadge extends StatelessWidget {
+  const ProBadge({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -106,8 +115,9 @@ class _ProBadge extends StatelessWidget {
           const SizedBox(width: 3),
           Text(
             'Pro',
-            style: AppTextStyles.bodyXSmallMedium
-                .copyWith(color: AppColors.primary),
+            style: AppTextStyles.bodyXSmallMedium.copyWith(
+              color: AppColors.primary,
+            ),
           ),
         ],
       ),

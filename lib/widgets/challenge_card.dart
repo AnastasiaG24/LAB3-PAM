@@ -36,8 +36,9 @@ class ChallengeCard extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: AppTextStyles.bodySmallRegular
-                      .copyWith(color: AppColors.grey300),
+                  style: AppTextStyles.bodySmallRegular.copyWith(
+                    color: AppColors.grey300,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(

@@ -5,6 +5,7 @@ import '../models/featured_plan.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import 'app_network_image.dart';
 import 'icon_metric.dart';
 import 'primary_button.dart';
 
@@ -28,7 +29,16 @@ class FeaturedPlanCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(plan.imagePath, fit: BoxFit.cover),
+            AppNetworkImage(url: plan.imageUrl),
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [Color(0xB3000000), Color(0x1A000000)],
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -41,8 +51,11 @@ class FeaturedPlanCard extends StatelessWidget {
                     children: [
                       Text(
                         plan.title,
-                        style:
-                            AppTextStyles.h6.copyWith(color: AppColors.white),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.h6.copyWith(
+                          color: AppColors.white,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -50,11 +63,12 @@ class FeaturedPlanCard extends StatelessWidget {
                         children: [
                           IconMetric(
                             iconPath: AppIcons.barbell,
-                            label: '${plan.weeks} week',
+                            label: plan.duration,
                             iconSize: 16,
                             gap: 4,
-                            style: AppTextStyles.bodyXSmallRegular
-                                .copyWith(color: AppColors.white),
+                            style: AppTextStyles.bodyXSmallRegular.copyWith(
+                              color: AppColors.white,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Container(
@@ -67,16 +81,17 @@ class FeaturedPlanCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '${plan.sessionsPerWeek}x/week',
-                            style: AppTextStyles.bodyXSmallRegular
-                                .copyWith(color: AppColors.white),
+                            plan.frequency,
+                            style: AppTextStyles.bodyXSmallRegular.copyWith(
+                              color: AppColors.white,
+                            ),
                           ),
                         ],
                       ),
                     ],
                   ),
                   PrimaryButton(
-                    label: 'Start Now',
+                    label: plan.actionLabel,
                     size: PrimaryButtonSize.xSmall,
                     onPressed: onStart,
                   ),

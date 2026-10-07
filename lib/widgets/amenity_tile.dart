@@ -23,11 +23,21 @@ class AmenityTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          SvgPicture.asset(amenity.iconPath, width: 20, height: 20),
+          SvgPicture.network(
+            amenity.iconUrl,
+            width: 20,
+            height: 20,
+            placeholderBuilder: (_) => const SizedBox.square(dimension: 20),
+            errorBuilder: (_, _, _) => const Icon(
+              Icons.check_circle_outline_rounded,
+              size: 20,
+              color: AppColors.grey400,
+            ),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              amenity.label,
+              amenity.name,
               style: AppTextStyles.bodySmallRegular,
               overflow: TextOverflow.ellipsis,
             ),

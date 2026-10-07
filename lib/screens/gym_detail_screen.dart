@@ -1,22 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../cubits/gym/gym_cubit.dart';
+import '../cubits/gym/gym_state.dart';
 import '../data/app_assets.dart';
-import '../data/mock_repository.dart';
+import '../data/fitness_repository.dart';
 import '../models/gym.dart';
+import '../models/gym_details.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/amenity_tile.dart';
+import '../widgets/detail_hero.dart';
 import '../widgets/primary_button.dart';
+import '../widgets/state_views.dart';
 
 class GymDetailScreen extends StatelessWidget {
   const GymDetailScreen({super.key});
 
+  static Route<void> route() =>
+      MaterialPageRoute<void>(builder: (_) => const GymDetailScreen());
+
   @override
   Widget build(BuildContext context) {
-    final gym = MockRepository.gym;
+    return BlocProvider(
+      create: (context) => GymCubit(context.read<FitnessRepository>())..load(),
+      child: BlocBuilder<GymCubit, GymState>(
+        builder: (context, state) => switch (state) {
+          GymLoading() => const _StatusScaffold(child: LoadingView()),
+          GymError(:final message) => _StatusScaffold(
+            child: ErrorView(
+              message: message,
+              onRetry: context.read<GymCubit>().load,
+            ),
+          ),
+          GymSuccess(:final details) => _GymDetailView(details: details),
+        },
+      ),
+    );
+  }
+}
+
+class _StatusScaffold extends StatelessWidget {
+  const _StatusScaffold({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.white,
+      appBar: AppBar(
+        backgroundColor: AppColors.white,
+        surfaceTintColor: AppColors.white,
+        leading: const BackButton(color: AppColors.grey900),
+      ),
+      body: child,
+    );
+  }
+}
+
+class _GymDetailView extends StatelessWidget {
+  const _GymDetailView({required this.details});
+
+  final GymDetails details;
+
+  @override
+  Widget build(BuildContext context) {
+    final gym = details.gym;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
@@ -30,11 +83,15 @@ class GymDetailScreen extends StatelessWidget {
             ListView(
               padding: EdgeInsets.zero,
               children: [
-                // Imaginea mare din varf + butoanele peste ea
-                _Hero(gym: gym),
+                DetailHero(
+                  imageUrl: gym.heroImageUrl,
+                  trailing: SvgPicture.asset(
+                    AppIcons.dotsVertical,
+                    width: 24,
+                    height: 24,
+                  ),
+                ),
                 const SizedBox(height: 24),
-
-                // Rating, denumire, locatie
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.screenPadding,
@@ -42,17 +99,16 @@ class GymDetailScreen extends StatelessWidget {
                   child: _Summary(gym: gym),
                 ),
                 const SizedBox(height: 18),
-
-                // Descriere cu Read more
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.screenPadding,
                   ),
-                  child: _Description(text: gym.description),
+                  child: Text(
+                    gym.description,
+                    style: AppTextStyles.bodySmallRegular,
+                  ),
                 ),
                 const SizedBox(height: 16),
-
-                // Lista de facilitati
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.screenPadding,
@@ -62,73 +118,12 @@ class GymDetailScreen extends StatelessWidget {
                 const SizedBox(height: 140),
               ],
             ),
-
-            // Bara fixa de jos: pret + Reserve
             Align(
               alignment: Alignment.bottomCenter,
-              child: _BottomBar(gym: gym),
+              child: _BottomBar(details: details),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _Hero extends StatelessWidget {
-  const _Hero({required this.gym});
-
-  final Gym gym;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 350,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(gym.imagePath, fit: BoxFit.cover),
-          SafeArea(
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.screenPadding,
-                  vertical: 16,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).maybePop(),
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(40),
-                        ),
-                        child: Center(
-                          child: SvgPicture.asset(
-                            AppIcons.arrowLeft,
-                            width: 24,
-                            height: 24,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SvgPicture.asset(
-                      AppIcons.dotsVertical,
-                      width: 24,
-                      height: 24,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -153,18 +148,20 @@ class _Summary extends StatelessWidget {
             children: [
               SvgPicture.asset(AppIcons.star, width: 16, height: 16),
               const SizedBox(width: 8),
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: '${gym.rating} ',
-                      style: AppTextStyles.bodySmallSemibold,
-                    ),
-                    TextSpan(
-                      text: '(${_formatCount(gym.reviewCount)} reviews)',
-                      style: AppTextStyles.bodySmallRegular,
-                    ),
-                  ],
+              Flexible(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${gym.rating} ',
+                        style: AppTextStyles.bodySmallSemibold,
+                      ),
+                      TextSpan(
+                        text: '(${_formatCount(gym.reviewCount)} reviews)',
+                        style: AppTextStyles.bodySmallRegular,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -189,29 +186,6 @@ class _Summary extends StatelessWidget {
   }
 }
 
-class _Description extends StatelessWidget {
-  const _Description({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(text: text, style: AppTextStyles.bodySmallRegular),
-          TextSpan(
-            text: 'Read more',
-            style: AppTextStyles.bodySmallMedium.copyWith(
-              color: AppColors.primary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _Amenities extends StatelessWidget {
   const _Amenities({required this.gym});
 
@@ -219,6 +193,8 @@ class _Amenities extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (gym.amenities.isEmpty) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -244,12 +220,14 @@ class _Amenities extends StatelessWidget {
 }
 
 class _BottomBar extends StatelessWidget {
-  const _BottomBar({required this.gym});
+  const _BottomBar({required this.details});
 
-  final Gym gym;
+  final GymDetails details;
 
   @override
   Widget build(BuildContext context) {
+    final pricing = details.gym.pricing;
+
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.white,
@@ -278,22 +256,33 @@ class _BottomBar extends StatelessWidget {
                       TextSpan(
                         children: [
                           TextSpan(
-                            text: '\$${gym.pricePerWeek.toStringAsFixed(2)} ',
+                            text: '${pricing.amountLabel} ',
                             style: AppTextStyles.h6,
                           ),
                           TextSpan(
-                            text: '/week',
+                            text: pricing.periodLabel,
                             style: AppTextStyles.bodySmallMedium,
                           ),
                         ],
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: PrimaryButton(label: 'Reserve', onPressed: () {}),
+                child: PrimaryButton(
+                  label: details.reserveLabel,
+                  onPressed: details.reserveEnabled
+                      ? () => ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${details.gym.name} reserved'),
+                          ),
+                        )
+                      : null,
+                ),
               ),
             ],
           ),

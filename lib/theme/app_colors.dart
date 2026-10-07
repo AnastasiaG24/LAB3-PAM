@@ -14,4 +14,5 @@ abstract final class AppColors {
   static const white = Color(0xFFFFFFFF);
 
   static const warning = Color(0xFFFFBE4C);
+  static const danger = Color(0xFFEF4444);
 }

@@ -1,5 +1,5 @@
 name: fitness_lab2
-description: PAM Lab 2 - implementare Flutter a design-ului Figma (Fitness App).
+description: PAM Lab 3 - Fitness App cu Cubit (flutter_bloc), date JSON incarcate asincron.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -7,20 +7,23 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
+  equatable: ^3.0.0
   flutter:
     sdk: flutter
+  flutter_bloc: ^9.1.1
   flutter_svg: ^2.0.10
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  bloc_test: ^10.0.0
 
 flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
+    - assets/data/
     - assets/icons/
 
   fonts:

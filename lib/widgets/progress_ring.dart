@@ -32,8 +32,9 @@ class ProgressRing extends StatelessWidget {
         child: Center(
           child: Text(
             '$value/$total',
-            style: AppTextStyles.bodyXSmallMedium
-                .copyWith(color: AppColors.white),
+            style: AppTextStyles.bodyXSmallMedium.copyWith(
+              color: AppColors.white,
+            ),
           ),
         ),
       ),
@@ -71,5 +72,6 @@ class _RingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RingPainter oldDelegate) =>
-      oldDelegate.progress != progress || oldDelegate.strokeWidth != strokeWidth;
+      oldDelegate.progress != progress ||
+      oldDelegate.strokeWidth != strokeWidth;
 }
